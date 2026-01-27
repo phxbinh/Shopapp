@@ -69,7 +69,7 @@ export function TodoApp_({data}) {
 
 
 // src/app/pages/TodoApp.js
-export function TodoApp({ data }) {
+export function TodoApp__({ data }) {
   //const todos = data?.todos || [];
   const todos = Array.isArray(data?.todos) ? data.todos : [];
   alert(JSON.stringify(data))
@@ -77,6 +77,7 @@ export function TodoApp({ data }) {
  // const [todos] = useState(data.todos || []);
   //const [todos, setTodos] = useState(data?.todos || []);
   const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(true);
 
   async function add() {
     if (!input.trim()) return;
@@ -146,7 +147,48 @@ return h("div", { className: "todo-app" },
 
 }
 
+export function TodoApp({ data }) {
+  const todos = Array.isArray(data?.todos) ? data.todos : [];
+  const [input, setInput] = useState("");
 
+  async function add() {
+    if (!input.trim()) return;
+    await createTodo(input);
+    setInput("");
+    App.Router.rerender(); // chạy lại loader
+  }
+
+  async function del(id) {
+    await removeTodo(id);
+    App.Router.rerender();
+  }
+
+  return h("div", { className: "todo-app" },
+    h("h1", { className: "todo-title" }, "Todo"),
+
+    h("div", { className: "todo-input-row" },
+      h("input", {
+        className: "todo-input",
+        value: input,
+        placeholder: "What needs to be done?",
+        oninput: e => setInput(e.target.value)
+      }),
+      h("button", { className: "todo-add-btn", onclick: add }, "Add")
+    ),
+
+    h("ul", { className: "todo-list" },
+      todos.map(t =>
+        h("li", { className: "todo-item", key: t.id },
+          h("span", { className: "todo-text" }, t.text),
+          h("button", {
+            className: "todo-delete-btn",
+            onclick: () => del(t.id)
+          }, "×")
+        )
+      )
+    )
+  );
+}
 
 
 
