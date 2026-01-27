@@ -147,7 +147,7 @@ async function navigateTo(url) {
 }
 
 
-
+/*
     function ErrorBoundary({ component: Comp, props }) {
       try { return h(Comp, props); }
       catch (err) {
@@ -155,6 +155,22 @@ async function navigateTo(url) {
         return h("div", { style: { color: "red" } }, "⚠️ Something went wrong.");
       }
     }
+*/
+function ErrorBoundary({ component: Comp, props }) {
+  try {
+    return Comp(props); // 🔥 FIX QUYẾT ĐỊNH
+  } catch (err) {
+    console.error("ErrorBoundary caught:", err);
+    return h(
+      "div",
+      { style: { color: "red", padding: "1rem" } },
+      "⚠️ Something went wrong."
+    );
+  }
+}
+
+
+
 
 /*
     function renderRoute(from, to) {
