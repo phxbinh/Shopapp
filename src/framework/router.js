@@ -382,7 +382,10 @@ async function rerender() {
       return h('a', { href: to, onClick: handleClick, ...rest }, children);
     }
 
-
+    const invalidate = function (key) {
+  if (!window.__CACHE__) return;
+  delete window.__CACHE__[key];
+};
 
     return { 
       addRoute, 
@@ -390,7 +393,8 @@ async function rerender() {
       beforeEach, 
       afterEach, 
       navigateTo, 
-      getQueryParams, 
+      getQueryParams,
+      invalidate,
       init, 
       Outlet, 
       currentRoute, 
