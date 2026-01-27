@@ -14,6 +14,53 @@ window.App = window.App || {};
     let useHash = true;
     let currentRoute = null;
     let nav = null;
+    
+    const routeStore = {
+      data: null,
+      status: "idle", // idle | loading | success | error
+      error: null,
+      listeners: new Set()
+    };
+    
+    async function runLoader(route, params, query) {
+      if (!route?.loader) {
+        setRouteStore({ status: "success", data: null });
+        return;
+      }
+    
+      setRouteStore({ status: "loading", error: null });
+    
+      try {
+        const data = await route.loader({ params, query, route });
+        setRouteStore({ status: "success", data });
+      } catch (err) {
+        console.error("Route loader error:", err);
+        setRouteStore({ status: "error", error: err });
+      }
+    }
+    
+    async function reloadData() {
+      if (!currentRoute) return;
+    
+      const loc = useHash
+        ? window.location.hash.slice(1) || "/"
+        : window.location.pathname + window.location.search;
+    
+      const [pathname, search = ""] = loc.split("?");
+      const query = getQueryParams("?" + search);
+      const match = pathname.match(currentRoute.regex);
+      const params = getParams(currentRoute.keys, match);
+    
+      await runLoader(currentRoute, params, query);
+    }
+    
+    
+
+    function setRouteStore(patch) {
+      Object.assign(routeStore, patch);
+      routeStore.listeners.forEach(fn => fn(routeStore));
+    }
+    
 
     function pathToRegex(path) {
       return new RegExp("^" + path.replace(/:\w+/g, "([^/]+)") + "$");
@@ -130,6 +177,94 @@ async function navigateTo(url) {
       }
     }
 
+/*
+    async function renderRoute(from, to) {
+      const loc = useHash
+        ? window.location.hash.slice(1) || "/"
+        : window.location.pathname + window.location.search;
+    
+      const [pathname, search = ""] = loc.split("?");
+      const query = getQueryParams("?" + search);
+      const matched = matchRoutes(pathname);
+    
+      let route = {
+        path: pathname,
+        component: notFound,
+        props: { params: {}, query, data: null, status: "idle", error: null },
+        node: () => notFound(),
+      };
+    
+      // ❌ NO MATCH
+      if (!matched.length) {
+        render(() => h(notFound, { pathname }), mountEl);
+        currentPath = pathname;
+        return;
+      }
+    
+      // ✅ MATCH
+      const last = matched[matched.length - 1];
+      const match = pathname.match(last.regex);
+      const params = getParams(last.keys, match);
+    
+      const routeProps = {
+        params,
+        query,
+        data: null,
+        status: last.loader ? "loading" : "success",
+        error: null
+      };
+    
+      // 🔁 Build component tree (layout → page)
+      let node = () => null;
+      for (let i = matched.length - 1; i >= 0; i--) {
+        const r = matched[i];
+        const ParentComp = r.component;
+        const child = node;
+    
+        node = (p) =>
+          h(ParentComp, {
+            ...p,
+            outlet: (childProps = {}) => child({ ...p, ...childProps })
+          });
+      }
+    
+      // 🔥 PHASE 1: render loading (or no-loader page)
+      render(() => h(App.VDOM.Fragment, null, [
+        nav ? h(nav, { key: "navbar" }) : null,
+        h("div", { id: "breadcrumb", key: "breadcrumb" }),
+        h(ErrorBoundary, { component: node, props: routeProps })
+      ]), mountEl);
+    
+      // 🚚 RUN LOADER
+      if (last.loader) {
+        try {
+          routeProps.data = await last.loader({
+            params,
+            query,
+            route: last
+          });
+          routeProps.status = "success";
+        } catch (err) {
+          routeProps.status = "error";
+          routeProps.error = err;
+          console.error("Route loader error:", err);
+        }
+    
+        // 🔥 PHASE 2: render with data
+        render(() => h(App.VDOM.Fragment, null, [
+          nav ? h(nav, { key: "navbar" }) : null,
+          h("div", { id: "breadcrumb", key: "breadcrumb" }),
+          h(ErrorBoundary, { component: node, props: routeProps })
+        ]), mountEl);
+      }
+    
+      currentPath = pathname;
+      currentRoute = { ...last, props: routeProps, node };
+    
+      if (afterHook) afterHook(currentRoute, from || null);
+    }
+*/
+
 async function renderRoute(from, to) {
   const loc = useHash
     ? window.location.hash.slice(1) || "/"
@@ -139,82 +274,50 @@ async function renderRoute(from, to) {
   const query = getQueryParams("?" + search);
   const matched = matchRoutes(pathname);
 
-  let route = {
-    path: pathname,
-    component: notFound,
-    props: { params: {}, query, data: null, status: "idle", error: null },
-    node: () => notFound(),
-  };
-
-  // ❌ NO MATCH
   if (!matched.length) {
     render(() => h(notFound, { pathname }), mountEl);
-    currentPath = pathname;
     return;
   }
 
-  // ✅ MATCH
   const last = matched[matched.length - 1];
   const match = pathname.match(last.regex);
   const params = getParams(last.keys, match);
 
-  const routeProps = {
-    params,
-    query,
-    data: null,
-    status: last.loader ? "loading" : "success",
-    error: null
-  };
+  // 🔥 CHẠY LOADER (KHÔNG render)
+  await runLoader(last, params, query);
 
-  // 🔁 Build component tree (layout → page)
   let node = () => null;
   for (let i = matched.length - 1; i >= 0; i--) {
     const r = matched[i];
-    const ParentComp = r.component;
+    const Comp = r.component;
     const child = node;
 
     node = (p) =>
-      h(ParentComp, {
+      h(Comp, {
         ...p,
         outlet: (childProps = {}) => child({ ...p, ...childProps })
       });
   }
 
-  // 🔥 PHASE 1: render loading (or no-loader page)
   render(() => h(App.VDOM.Fragment, null, [
-    nav ? h(nav, { key: "navbar" }) : null,
-    h("div", { id: "breadcrumb", key: "breadcrumb" }),
-    h(ErrorBoundary, { component: node, props: routeProps })
+    nav ? h(nav) : null,
+    h(ErrorBoundary, {
+      component: node,
+      props: { params, query, routeStore }
+    })
   ]), mountEl);
-
-  // 🚚 RUN LOADER
-  if (last.loader) {
-    try {
-      routeProps.data = await last.loader({
-        params,
-        query,
-        route: last
-      });
-      routeProps.status = "success";
-    } catch (err) {
-      routeProps.status = "error";
-      routeProps.error = err;
-      console.error("Route loader error:", err);
-    }
-
-    // 🔥 PHASE 2: render with data
-    render(() => h(App.VDOM.Fragment, null, [
-      nav ? h(nav, { key: "navbar" }) : null,
-      h("div", { id: "breadcrumb", key: "breadcrumb" }),
-      h(ErrorBoundary, { component: node, props: routeProps })
-    ]), mountEl);
-  }
 
   currentPath = pathname;
   currentRoute = { ...last, props: routeProps, node };
 
-  if (afterHook) afterHook(currentRoute, from || null);
+  if (afterHook) afterHook(last, from || null);
 }
+
+
+
+
+
+
     function navbarDynamic({navbar}) {
       nav = navbar;
     }
@@ -307,6 +410,8 @@ async function reload() {
       navigateTo, 
       getQueryParams,
       invalidate,
+      reloadData,      // 🔥 dùng cái này
+      routeStore,
       reload,
       init, 
       Outlet, 
