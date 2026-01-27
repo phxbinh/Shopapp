@@ -42,7 +42,7 @@ Router.addRoute({
   component: TodoApp,
   loader: async () => {
     if (window.__CACHE__?.todos) {
-      return { todos: window.__CACHE__; };
+      return todos: window.__CACHE__;
     }
 
     const todos = await fetchTodos();
