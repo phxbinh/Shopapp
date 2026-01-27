@@ -1,12 +1,19 @@
-import { neon } from '@neondatabase/serverless';
+// src/server/db.js
+import { sql } from "@neondatabase/serverless";
 
-const sql = neon(process.env.DATABASE_URL);
+export async function getTodos() {
+  const { rows } = await sql`
+    SELECT id, text
+    FROM todos
+    ORDER BY id DESC
+  `;
+  return rows;
+}
 
-export const query = () =>
-  sql`SELECT * FROM todos ORDER BY id DESC`;
+export async function addTodo(text) {
+  await sql`INSERT INTO todos (text) VALUES (${text})`;
+}
 
-export const add = (text) =>
-  sql`INSERT INTO todos (text) VALUES (${text})`;
-
-export const remove = (id) =>
-  sql`DELETE FROM todos WHERE id = ${id}`;
+export async function deleteTodo(id) {
+  await sql`DELETE FROM todos WHERE id = ${id}`;
+}
