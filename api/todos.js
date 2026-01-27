@@ -37,7 +37,7 @@ export default async function handler(req, res) {
 }
 */
 
-import { getTodos, addTodo, deleteTodo } from "../server/db.js";
+import { getTodos, addTodo, deleteTodo } from "../src/server/db.js";
 
 export default async function handler(req, res) {
   try {
