@@ -13,8 +13,9 @@ Router.addRoute({
   path: "/",
   component: TodoApp,
   loader: async () => {
+    
     if (window.__CACHE__?.todos) {
-      return window.__CACHE__;
+      return { todos: window.__CACHE__.todos };
     }
     const todos = await fetchTodos();
     window.__CACHE__ = {
