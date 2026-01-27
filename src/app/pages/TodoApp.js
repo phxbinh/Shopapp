@@ -33,9 +33,7 @@ export function TodoApp({ data, status }) {
     if (Array.isArray(data?.todos)) {
       setTodos(data.todos);
     }
-  }, [data]);
-  
-  
+  }, [data, window.__CACHE__]);
 
   async function add() {
     if (!input.trim()) return;
