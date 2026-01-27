@@ -27,54 +27,55 @@ window.App = window.App || {};
       return Object.fromEntries(new URLSearchParams(search));
     }
 
-function addRoute(pathOrObj, component) {
-  // ✅ API đơn giản: addRoute("/about", AboutPage)
-  if (typeof pathOrObj === "string") {
-    routes.push({
-      path: pathOrObj,
-      regex: pathToRegex(pathOrObj),
-      keys: (pathOrObj.match(/:(\w+)/g) || []).map(k => k.slice(1)),
-      component: component,
-      loader: null,           // ✅ FIX
-      children: [],
-    });
-    return;
-  }
-
-  // ✅ API object: addRoute({ path, component, loader, children })
-  const route = pathOrObj;
-  const fullPath = route.path;
-
-  const record = {
-    path: fullPath,
-    regex: pathToRegex(fullPath),
-    keys: (fullPath.match(/:(\w+)/g) || []).map(k => k.slice(1)),
-    component: route.component || null,
-    loader: route.loader || null,   // ✅ OK
-    redirect: route.redirect,
-    meta: route.meta || {},
-    parent: route.parent || null,
-    type: route.type || null,
-    title: route.title || null,
-    children: [],
-  };
-
-  routes.push(record);
-
-  if (route.children) {
-    route.children.forEach(child =>
-      addRoute({
-        ...child,
-        path: (
-          fullPath.replace(/\/$/, "") +
-          "/" +
-          String(child.path || "").replace(/^\//, "")
-        ).replace(/\/+/g, "/"),
-        parent: record,
-      })
-    );
-  }
-}
+    function addRoute(pathOrObj, component) {
+      // ✅ API đơn giản: addRoute("/about", AboutPage)
+      if (typeof pathOrObj === "string") {
+        routes.push({
+          path: pathOrObj,
+          regex: pathToRegex(pathOrObj),
+          keys: (pathOrObj.match(/:(\w+)/g) || []).map(k => k.slice(1)),
+          component: component,
+          loader: null,           // ✅ FIX
+          children: [],
+        });
+        return;
+      }
+    
+      // ✅ API object: addRoute({ path, component, loader, children })
+      const route = pathOrObj;
+      const fullPath = route.path;
+    
+      const record = {
+        path: fullPath,
+        regex: pathToRegex(fullPath),
+        keys: (fullPath.match(/:(\w+)/g) || []).map(k => k.slice(1)),
+        component: route.component || null,
+        loader: route.loader || null,   // ✅ OK
+        redirect: route.redirect,
+        meta: route.meta || {},
+        parent: route.parent || null,
+        type: route.type || null,
+        title: route.title || null,
+        children: [],
+      };
+    
+      routes.push(record);
+    
+      if (route.children) {
+        route.children.forEach(child =>
+          addRoute({
+            ...child,
+            path: (
+              fullPath.replace(/\/$/, "") +
+              "/" +
+              String(child.path || "").replace(/^\//, "")
+            ).replace(/\/+/g, "/"),
+            parent: record,
+          })
+        );
+      }
+    }
+    
     function matchRoutes(pathname) {
       const matched = [];
       function recursive(list) {
@@ -98,29 +99,27 @@ function addRoute(pathOrObj, component) {
     function afterEach(hook) { afterHook = hook; }
 
     // 👉 navigateTo: chỉ đổi URL, không render
-async function navigateTo(url) {
-  if (currentPath === url) return;
-
-  const from = currentPath;
-  const to = url;
-
-  const proceed = async (nextUrl) => {
-    if (nextUrl && nextUrl !== true) return navigateTo(nextUrl);
-
-    if (!useHash) {
-      history.pushState(null, "", url);
-      currentPath = url;          // 🔥 BẮT BUỘC
-      await renderRoute(from, url);
-    } else {
-      window.location.hash = "#" + url;
+    async function navigateTo(url) {
+      if (currentPath === url) return;
+    
+      const from = currentPath;
+      const to = url;
+    
+      const proceed = async (nextUrl) => {
+        if (nextUrl && nextUrl !== true) return navigateTo(nextUrl);
+    
+        if (!useHash) {
+          history.pushState(null, "", url);
+          currentPath = url;          // 🔥 BẮT BUỘC
+          await renderRoute(from, url);
+        } else {
+          window.location.hash = "#" + url;
+        }
+      };
+    
+      if (beforeHook) beforeHook(to, from, proceed);
+      else await proceed(true);
     }
-  };
-
-  if (beforeHook) beforeHook(to, from, proceed);
-  else await proceed(true);
-}
-
-
 
     function ErrorBoundary({ component: Comp, props }) {
       try { return h(Comp, props); }
@@ -179,16 +178,16 @@ async function navigateTo(url) {
             outlet: (childProps = {}) => child({ ...p, ...childProps })
           });
       }
-    /*
+    
       // 🔥 PHASE 1: render loading (or no-loader page)
       render(() => h(App.VDOM.Fragment, null, [
         nav ? h(nav, { key: "navbar" }) : null,
         h("div", { id: "breadcrumb", key: "breadcrumb" }),
         h(ErrorBoundary, { component: node, props: routeProps })
       ]), mountEl);
-    */
+    
       // 🚚 RUN LOADER
-      //if (last.loader) {
+      if (last.loader) {
         try {
           routeProps.data = await last.loader({
             params,
@@ -208,7 +207,7 @@ async function navigateTo(url) {
           h("div", { id: "breadcrumb", key: "breadcrumb" }),
           h(ErrorBoundary, { component: node, props: routeProps })
         ]), mountEl);
-      //}
+      }
     
       currentPath = pathname;
       currentRoute = { ...last, props: routeProps, node };
@@ -226,8 +225,6 @@ async function navigateTo(url) {
       currentPath = useHash
         ? window.location.hash.slice(1) || "/"
         : window.location.pathname + window.location.search;
-
-   //alert(currentPath)
 
       const popHandler = async () => {
         const from = currentPath;
@@ -265,14 +262,14 @@ async function navigateTo(url) {
       await renderRoute(null, currentPath);
     }
 
-async function rerender() {
-  await renderRoute(null, currentPath);
-}
-
-async function reload() {
-  await renderRoute(null, currentPath);
-}
-
+    async function rerender() {
+      await renderRoute(null, currentPath);
+    }
+    
+    async function reload() {
+      await renderRoute(null, currentPath);
+    }
+    
     function Outlet(props) {
       return props?.outlet ? h(props.outlet, props) : null;
     }
