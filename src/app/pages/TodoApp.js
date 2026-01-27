@@ -79,6 +79,7 @@ export function TodoApp__({ data }) {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(true);
 
+/*
   async function add() {
     if (!input.trim()) return;
     await createTodo(input);
@@ -90,6 +91,23 @@ export function TodoApp__({ data }) {
     await removeTodo(id);
     App.Router.rerender(); // 🔥 re-run loader
   }
+*/
+
+async function add() {
+  if (!input.trim()) return;
+  await createTodo(input);
+  setInput("");
+  delete window.__CACHE__;   // 🔥 FIX
+  App.Router.rerender();
+}
+
+async function del(id) {
+  await removeTodo(id);
+  delete window.__CACHE__;   // 🔥 FIX
+  App.Router.rerender();
+}
+
+
 
 /*
   return h("div", null,
