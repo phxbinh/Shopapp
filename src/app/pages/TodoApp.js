@@ -166,8 +166,19 @@ return h("div", { className: "todo-app" },
 }
 
 export function TodoApp({ data }) {
-  const todos = Array.isArray(data?.todos) ? data.todos : [];
+  //const todos = Array.isArray(data?.todos) ? data.todos : [];
+  //const [input, setInput] = useState("");
+
+  const [todos, setTodos] = useState([]);
   const [input, setInput] = useState("");
+
+  // 🔥 BẮT BUỘC: sync loader → state
+  useEffect(() => {
+    if (Array.isArray(data?.todos)) {
+      setTodos(data.todos);
+    }
+  }, [data]);
+
 
   async function add() {
     if (!input.trim()) return;
