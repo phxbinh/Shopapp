@@ -75,7 +75,7 @@ function addRoute(pathOrObj, component) {
     );
   }
 }
-
+/*
     function matchRoutes(pathname) {
       const matched = [];
       function recursive(list) {
@@ -91,7 +91,32 @@ function addRoute(pathOrObj, component) {
       recursive(routes);
       return matched;
     }
-    
+    */
+
+function matchRoutes(pathname) {
+  const matched = [];
+
+  for (let r of routes) {
+    const match = pathname.match(r.regex);
+    if (match) {
+      matched.push(r);
+
+      // match nested nếu có
+      if (r.children && r.children.length) {
+        for (let c of r.children) {
+          const cm = pathname.match(c.regex);
+          if (cm) matched.push(c);
+        }
+      }
+    }
+  }
+
+  return matched;
+}
+
+
+
+
     //cài đặt để gọi notFound cho nội dung của route tương ứng
     function setNotFound(component) { notFound = component; }
 
@@ -230,12 +255,19 @@ async function renderRoute(from, to) {
       const r = matched[i];
       const ParentComp = r.component;
       const child = node;
-
+/*
       node = (p) =>
         ParentComp({
           ...p,
           outlet: (childProps = {}) => child({ ...p, ...childProps })
         });
+        */
+node = (p) =>
+  h(ParentComp, {
+    ...p,
+    outlet: (childProps = {}) => child({ ...p, ...childProps })
+  });
+
     }
 
     route = { ...last, props: routeProps, component: last.component, node };
