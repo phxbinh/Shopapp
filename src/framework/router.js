@@ -1,3 +1,4 @@
+// src/framework/router.js -> road to SSR
 window.App = window.App || {};
 (function (App) {
   const { h, render } = App.VDOM;
