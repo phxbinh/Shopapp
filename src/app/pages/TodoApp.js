@@ -73,6 +73,7 @@ export function TodoApp({ data }) {
   //const todos = data?.todos || [];
   const todos = Array.isArray(data?.todos) ? data.todos : [];
   alert(JSON.stringify(data))
+  alert("todos: "+ todos)
  // const [todos] = useState(data.todos || []);
   //const [todos, setTodos] = useState(data?.todos || []);
   const [input, setInput] = useState("");
