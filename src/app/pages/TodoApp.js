@@ -98,13 +98,13 @@ async function add() {
   await createTodo(input);
   setInput("");
   delete window.__CACHE__;   // 🔥 FIX
-  App.Router.rerender();
+  await App.Router.reload();
 }
 
 async function del(id) {
   await removeTodo(id);
   delete window.__CACHE__;   // 🔥 FIX
-  App.Router.rerender();
+  await App.Router.reload();
 }
 
 
