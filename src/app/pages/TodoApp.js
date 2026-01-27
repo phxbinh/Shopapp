@@ -30,13 +30,13 @@ export function TodoApp({ data, status }) {
     await createTodo(input);
     setInput("");
     delete window.__CACHE__;   // 🔥 FIX
-    await App.Router.reload();
+    //await App.Router.reload();
   }
   
   async function del(id) {
     await removeTodo(id);
     delete window.__CACHE__;   // 🔥 FIX
-    await App.Router.reload();
+    //await App.Router.reload();
   }
 
   return h("div", { className: "todo-app" },
