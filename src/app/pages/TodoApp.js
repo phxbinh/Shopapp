@@ -60,7 +60,8 @@ return h("div", { className: "todo-app" },
 */
 
 
-export function TodoApp() {
+export function TodoApp({data}) {
+  const todos = data?.todos || {}
   return h("div", null, "🔥 TODO APP ALIVE");
 }
 
