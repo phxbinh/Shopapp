@@ -60,8 +60,14 @@ return h("div", { className: "todo-app" },
 */
 
 
+export function TodoApp() {
+  return h("div", null, "🔥 TODO APP ALIVE");
+}
+
+
+
 // src/app/pages/TodoApp.js
-export function TodoApp({ data }) {
+export function TodoApp_({ data }) {
   const todos = data?.todos || [];
   alert(JSON.stringify(data))
  // const [todos] = useState(data.todos || []);
