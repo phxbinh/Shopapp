@@ -4,16 +4,17 @@ import { fetchTodos, createTodo, removeTodo } from "../../shared/api.js";
 
 // src/app/pages/TodoApp.js
 export function TodoApp({ data, status }) {
-  //const [todos, setTodos] = useState([]);
+  /*
   const [input, setInput] = useState("");
 
   // 🔥 BẮT BUỘC: sync loader → state
-  /*
+  const [todos, setTodos] = useState([]);
   useEffect(() => {
     if (Array.isArray(data?.todos)) {
       setTodos(data.todos);
     }
-  }, [data]); */
+  }, [data]);
+  */
   
   if (status === "loading") {
     return h("p", null, "Loading todos...");
@@ -23,7 +24,18 @@ export function TodoApp({ data, status }) {
     return h("p", { style: { color: "red" } }, "Failed to load todos");
   }
 
-  const todos = data?.todos || [];
+  const [input, setInput] = useState("");
+  //const todos = data?.todos || [];
+  
+  // 🔥 BẮT BUỘC: sync loader → state
+  const [todos, setTodos] = useState([]);
+  useEffect(() => {
+    if (Array.isArray(data?.todos)) {
+      setTodos(data.todos);
+    }
+  }, [data]);
+  
+  
 
   async function add() {
     if (!input.trim()) return;
