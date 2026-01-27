@@ -3,7 +3,7 @@ const { useState, useEffect } = window.App.Hooks;
 import { fetchTodos, createTodo, removeTodo } from "../../shared/api.js";
 
 // src/app/pages/TodoApp.js
-export function TodoApp_({ data, status }) {
+export function TodoApp({ data, status }) {
   //const [todos, setTodos] = useState([]);
   const [input, setInput] = useState("");
 
@@ -65,71 +65,4 @@ export function TodoApp_({ data, status }) {
     )
   );
 }
-
-
-
-
-export function TodoApp({ routeStore }) {
-  const [state, setState] = useState(routeStore);
-
-  useEffect(() => {
-    const fn = s => setState({ ...s });
-    routeStore.listeners.add(fn);
-    return () => routeStore.listeners.delete(fn);
-  }, []);
-
-  if (state.status === "loading") {
-    return h("p", null, "Loading…");
-  }
-
-  const todos = state.data?.todos || [];
-
-  async function add() {
-    if (!input.trim()) return;
-    await createTodo(input);
-    setInput("");
-    delete window.__CACHE__;   // 🔥 FIX
-    await App.Router.reloadData(); // ✅ đúng
-  }
-  
-  async function del(id) {
-    await removeTodo(id);
-    delete window.__CACHE__;   // 🔥 FIX
-    await App.Router.reloadData(); // ✅ đúng
-  }
-
-  return h("div", { className: "todo-app" },
-    h("h1", { className: "todo-title" }, "Todo"),
-
-    h("div", { className: "todo-input-row" },
-      h("input", {
-        className: "todo-input",
-        value: input,
-        placeholder: "What needs to be done?",
-        oninput: e => setInput(e.target.value)
-      }),
-      h("button", { className: "todo-add-btn", onclick: add }, "Add")
-    ),
-
-    h("ul", { className: "todo-list" },
-      todos.map(t =>
-        h("li", { className: "todo-item", key: t.id },
-          h("span", { className: "todo-text" }, t.text),
-          h("button", {
-            className: "todo-delete-btn",
-            onclick: () => del(t.id)
-          }, "×")
-        )
-      )
-    )
-  );
-}
-
-
-
-
-
-
-
-
 
