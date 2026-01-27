@@ -60,16 +60,17 @@ return h("div", { className: "todo-app" },
 */
 
 
-export function TodoApp({data}) {
+export function TodoApp_({data}) {
   const todos = data?.todos || {}
+  alert(
   return h("div", null, "🔥 TODO APP ALIVE");
 }
 
 
 
 // src/app/pages/TodoApp.js
-export function TodoApp_({ data }) {
-  const todos = data?.todos || [];
+export function TodoApp({ data }) {
+  const todos = data || [];
   alert(JSON.stringify(data))
  // const [todos] = useState(data.todos || []);
   //const [todos, setTodos] = useState(data?.todos || []);
