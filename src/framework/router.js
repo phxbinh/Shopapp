@@ -90,31 +90,6 @@ function addRoute(pathOrObj, component) {
       recursive(routes);
       return matched;
     }
-    
-/*
-function matchRoutes(pathname) {
-  const matched = [];
-
-  for (let r of routes) {
-    const match = pathname.match(r.regex);
-    if (match) {
-      matched.push(r);
-
-      // match nested nếu có
-      if (r.children && r.children.length) {
-        for (let c of r.children) {
-          const cm = pathname.match(c.regex);
-          if (cm) matched.push(c);
-        }
-      }
-    }
-  }
-
-  return matched;
-}
-*/
-
-
 
     //cài đặt để gọi notFound cho nội dung của route tương ứng
     function setNotFound(component) { notFound = component; }
@@ -154,77 +129,6 @@ async function navigateTo(url) {
         return h("div", { style: { color: "red" } }, "⚠️ Something went wrong.");
       }
     }
-
-/*
-async function renderRoute(from, to) {
-  const loc = useHash
-    ? window.location.hash.slice(1) || "/"
-    : window.location.pathname + window.location.search;
-
-  const [pathname, search = ""] = loc.split("?");
-  const query = getQueryParams("?" + search);
-  const matched = matchRoutes(pathname);
-
-  let route = {
-    path: pathname,
-    component: notFound,
-    props: { params: {}, query, data: null },
-    node: () => notFound(),
-  };
-
-  if (matched.length) {
-    const last = matched[matched.length - 1];
-    const match = pathname.match(last.regex);
-    const params = getParams(last.keys, match);
-
-    const routeProps = { params, query, data: null };
-
-    // ✅ LOADER
-    if (last.loader) {
-      try {
-        routeProps.data = await last.loader({
-          params,
-          query,
-          route: last
-        });
-      } catch (err) {
-        console.error("Route loader error:", err);
-      }
-    }
-
-    let node = () => null;
-    for (let i = matched.length - 1; i >= 0; i--) {
-      const r = matched[i];
-      const ParentComp = r.component;
-      const child = node;
-
-
-      node = (p) =>
-        h(ParentComp, {
-          ...p,
-          outlet: (childProps = {}) => child({ ...p, ...childProps })
-        });
-    }
-
-    route = { ...last, props: routeProps, component: last.component, node };
-
-    log("🎞️Render", `Render in renderRoute ${pathname}`, "indiv");
-
-    render(() => h(App.VDOM.Fragment, null, [
-      nav ? h(nav, { key: "navbar" }) : null,
-      h("div", { id: "breadcrumb", key: "breadcrumb" }, ""),
-      h(ErrorBoundary, { component: node, props: routeProps })
-    ]), mountEl);
-
-  } else {
-    render(() => h(notFound, { pathname }), mountEl);
-  }
-
-  currentPath = pathname;
-  currentRoute = route;
-  if (afterHook) afterHook(route, from || null);
-}
-*/
 
 async function renderRoute(from, to) {
   const loc = useHash
@@ -311,17 +215,6 @@ async function renderRoute(from, to) {
 
   if (afterHook) afterHook(currentRoute, from || null);
 }
-
-
-
-
-
-
-
-
-
-
-
     function navbarDynamic({navbar}) {
       nav = navbar;
     }
