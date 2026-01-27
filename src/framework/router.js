@@ -27,48 +27,54 @@ window.App = window.App || {};
       return Object.fromEntries(new URLSearchParams(search));
     }
 
-    function addRoute(pathOrObj, component) {
-      if (typeof pathOrObj === "string") {
-        routes.push({
-          path: pathOrObj,
-          regex: pathToRegex(pathOrObj),
-          keys: (pathOrObj.match(/:(\w+)/g) || []).map(k => k.slice(1)),
-          component: component,
-          loader: route.loader || null,
-          children: [],
-        });
-      } else {
-        const route = pathOrObj;
-        const fullPath = route.path;
-        const record = {
-          path: fullPath,
-          regex: pathToRegex(fullPath),
-          keys: (fullPath.match(/:(\w+)/g) || []).map(k => k.slice(1)),
-          component: route.component || null,
-			loader: route.loader || null,
-          redirect: route.redirect,
-          meta: route.meta || {},
-          parent: route.parent || null,
-          type: route.type || null,
-          title: route.title || null,
-          children: [],
-        };
+function addRoute(pathOrObj, component) {
+  // ✅ API đơn giản: addRoute("/about", AboutPage)
+  if (typeof pathOrObj === "string") {
+    routes.push({
+      path: pathOrObj,
+      regex: pathToRegex(pathOrObj),
+      keys: (pathOrObj.match(/:(\w+)/g) || []).map(k => k.slice(1)),
+      component: component,
+      loader: null,           // ✅ FIX
+      children: [],
+    });
+    return;
+  }
 
-        routes.push(record);
+  // ✅ API object: addRoute({ path, component, loader, children })
+  const route = pathOrObj;
+  const fullPath = route.path;
 
-        if (route.children) {
-          route.children.forEach(child =>
-            addRoute({
-              ...child,
-              path: (
-                fullPath.replace(/\/$/, "") + "/" + String(child.path || "").replace(/^\//, "")
-              ).replace(/\/+/g, "/"),
-              parent: record,
-            })
-          );
-        }
-      }
-    }
+  const record = {
+    path: fullPath,
+    regex: pathToRegex(fullPath),
+    keys: (fullPath.match(/:(\w+)/g) || []).map(k => k.slice(1)),
+    component: route.component || null,
+    loader: route.loader || null,   // ✅ OK
+    redirect: route.redirect,
+    meta: route.meta || {},
+    parent: route.parent || null,
+    type: route.type || null,
+    title: route.title || null,
+    children: [],
+  };
+
+  routes.push(record);
+
+  if (route.children) {
+    route.children.forEach(child =>
+      addRoute({
+        ...child,
+        path: (
+          fullPath.replace(/\/$/, "") +
+          "/" +
+          String(child.path || "").replace(/^\//, "")
+        ).replace(/\/+/g, "/"),
+        parent: record,
+      })
+    );
+  }
+}
 
     function matchRoutes(pathname) {
       const matched = [];
@@ -99,7 +105,7 @@ async function navigateTo(url) {
   const from = currentPath;
   const to = url;
 
-  const proceed = (nextUrl) => {
+  const proceed = async (nextUrl) => {
     if (nextUrl && nextUrl !== true) return navigateTo(nextUrl);
 
     if (!useHash) {
@@ -112,7 +118,7 @@ async function navigateTo(url) {
   };
 
   if (beforeHook) beforeHook(to, from, proceed);
-  else proceed(true);
+  else await proceed(true);
 }
 
 
@@ -265,7 +271,7 @@ async function renderRoute(from, to) {
 
    //alert(currentPath)
 
-      const popHandler = () => {
+      const popHandler = async () => {
         const from = currentPath;
         currentPath = useHash
           ? window.location.hash.slice(1) || "/"
