@@ -33,6 +33,7 @@ window.App = window.App || {};
           regex: pathToRegex(pathOrObj),
           keys: (pathOrObj.match(/:(\w+)/g) || []).map(k => k.slice(1)),
           component: component,
+          loader: route.loader || null,
           children: [],
         });
       } else {
@@ -43,6 +44,7 @@ window.App = window.App || {};
           regex: pathToRegex(fullPath),
           keys: (fullPath.match(/:(\w+)/g) || []).map(k => k.slice(1)),
           component: route.component || null,
+			loader: route.loader || null,
           redirect: route.redirect,
           meta: route.meta || {},
           parent: route.parent || null,
@@ -90,28 +92,6 @@ window.App = window.App || {};
     function afterEach(hook) { afterHook = hook; }
 
     // 👉 navigateTo: chỉ đổi URL, không render
-/*
-    function navigateTo(url) {
-      if (currentPath === url) return;
-      const from = currentPath;
-      const to = url;
-
-      const proceed = (nextUrl) => {
-        if (nextUrl && nextUrl !== true) return navigateTo(nextUrl);
-        if (!useHash) {
-          history.pushState(null, "", url);
-          renderRoute(from, url); // ✅ render ngay khi đổi path trong notPound mode
-        } else {
-          window.location.hash = "#" + url;
-        }
-      };
-
-      if (beforeHook) beforeHook(to, from, proceed);
-      else proceed(true);
-    }
-*/
-
-// Test fix lỗi trên vercel
 function navigateTo(url) {
   if (currentPath === url) return;
 
@@ -124,7 +104,7 @@ function navigateTo(url) {
     if (!useHash) {
       history.pushState(null, "", url);
       currentPath = url;          // 🔥 BẮT BUỘC
-      renderRoute(from, url);
+      await renderRoute(from, url);
     } else {
       window.location.hash = "#" + url;
     }
@@ -144,6 +124,7 @@ function navigateTo(url) {
       }
     }
 
+/*
     function renderRoute(from, to) {
       const loc = useHash
         ? window.location.hash.slice(1) || "/"
@@ -197,6 +178,78 @@ function navigateTo(url) {
       currentRoute = route;
       if (afterHook) afterHook(route, from || null);
     }
+
+*/
+
+
+async function renderRoute(from, to) {
+  const loc = useHash
+    ? window.location.hash.slice(1) || "/"
+    : window.location.pathname + window.location.search;
+
+  const [pathname, search = ""] = loc.split("?");
+  const query = getQueryParams("?" + search);
+  const matched = matchRoutes(pathname);
+
+  let route = {
+    path: pathname,
+    component: notFound,
+    props: { params: {}, query, data: null },
+    node: () => notFound(),
+  };
+
+  if (matched.length) {
+    const last = matched[matched.length - 1];
+    const match = pathname.match(last.regex);
+    const params = getParams(last.keys, match);
+
+    const routeProps = { params, query, data: null };
+
+    // ✅ LOADER
+    if (last.loader) {
+      try {
+        routeProps.data = await last.loader({
+          params,
+          query,
+          route: last
+        });
+      } catch (err) {
+        console.error("Route loader error:", err);
+      }
+    }
+
+    let node = () => null;
+    for (let i = matched.length - 1; i >= 0; i--) {
+      const r = matched[i];
+      const ParentComp = r.component;
+      const child = node;
+
+      node = (p) =>
+        ParentComp({
+          ...p,
+          outlet: (childProps = {}) => child({ ...p, ...childProps })
+        });
+    }
+
+    route = { ...last, props: routeProps, component: last.component, node };
+
+    log("🎞️Render", `Render in renderRoute ${pathname}`, "indiv");
+
+    render(() => h(App.VDOM.Fragment, null, [
+      nav ? h(nav, { key: "navbar" }) : null,
+      h("div", { id: "breadcrumb", key: "breadcrumb" }, ""),
+      h(ErrorBoundary, { component: node, props: routeProps })
+    ]), mountEl);
+
+  } else {
+    render(() => h(notFound, { pathname }), mountEl);
+  }
+
+  currentPath = pathname;
+  currentRoute = route;
+  if (afterHook) afterHook(route, from || null);
+}
+
 
     function navbarDynamic({navbar}) {
       nav = navbar;
