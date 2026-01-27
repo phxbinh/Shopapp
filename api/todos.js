@@ -1,22 +1,36 @@
 // api/todos.js
-import { getTodos, addTodo, deleteTodo } from "../src/server/db.js";
+import { neon } from "@neondatabase/serverless";
+
+const sql = neon(process.env.DATABASE_URL);
 
 export default async function handler(req, res) {
-  if (req.method === "GET") {
-    return res.status(200).json(await getTodos());
-  }
+  try {
+    if (req.method === "GET") {
+      const todos = await sql`SELECT * FROM todos ORDER BY id DESC`;
+      return res.status(200).json(todos);
+    }
 
-  if (req.method === "POST") {
-    const { text } = JSON.parse(req.body);
-    await addTodo(text);
-    return res.json({ ok: true });
-  }
+    if (req.method === "POST") {
+      const body = typeof req.body === "string"
+        ? JSON.parse(req.body)
+        : req.body;
 
-  if (req.method === "DELETE") {
-    const { id } = JSON.parse(req.body);
-    await deleteTodo(id);
-    return res.json({ ok: true });
-  }
+      await sql`INSERT INTO todos (text) VALUES (${body.text})`;
+      return res.status(201).json({ ok: true });
+    }
 
-  res.status(405).end();
+    if (req.method === "DELETE") {
+      const body = typeof req.body === "string"
+        ? JSON.parse(req.body)
+        : req.body;
+
+      await sql`DELETE FROM todos WHERE id = ${body.id}`;
+      return res.status(200).json({ ok: true });
+    }
+
+    res.status(405).end();
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
 }
