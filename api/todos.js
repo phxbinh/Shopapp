@@ -1,20 +1,21 @@
-import { query, add, remove } from '../src/server/db.js';
+// api/todos.js
+import { getTodos, addTodo, deleteTodo } from "../src/server/db.js";
 
 export default async function handler(req, res) {
-  if (req.method === 'GET') {
-    const todos = await query();
-    return res.json(todos);
+  if (req.method === "GET") {
+    return res.status(200).json(await getTodos());
   }
 
-  if (req.method === 'POST') {
-    const { text } = req.body;
-    await add(text);
-    return res.status(201).end();
+  if (req.method === "POST") {
+    const { text } = JSON.parse(req.body);
+    await addTodo(text);
+    return res.json({ ok: true });
   }
 
-  if (req.method === 'DELETE') {
-    await remove(req.query.id);
-    return res.status(204).end();
+  if (req.method === "DELETE") {
+    const { id } = JSON.parse(req.body);
+    await deleteTodo(id);
+    return res.json({ ok: true });
   }
 
   res.status(405).end();
