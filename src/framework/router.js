@@ -156,80 +156,6 @@ async function navigateTo(url) {
     }
 
 /*
-function ErrorBoundary({ component: Comp, props }) {
-  try {
-    return Comp(props); // 🔥 FIX QUYẾT ĐỊNH
-  } catch (err) {
-    console.error("ErrorBoundary caught:", err);
-    return h(
-      "div",
-      { style: { color: "red", padding: "1rem" } },
-      "⚠️ Something went wrong."
-    );
-  }
-}
-*/
-
-
-
-/*
-    function renderRoute(from, to) {
-      const loc = useHash
-        ? window.location.hash.slice(1) || "/"
-        : window.location.pathname + window.location.search;
-
-      const [pathname, search = ""] = loc.split("?");
-      const query = getQueryParams("?" + search);
-      const matched = matchRoutes(pathname);
-
-      let route = {
-        path: pathname,
-        component: notFound,
-        props: { params: {}, query },
-        node: () => notFound(),
-      };
-
-      if (matched.length) {
-        const last = matched[matched.length - 1];
-        const match = pathname.match(last.regex);
-        const params = getParams(last.keys, match);
-        const routeProps = { params, query };
-
-        let node = () => null;
-        for (let i = matched.length - 1; i >= 0; i--) {
-          const r = matched[i];
-          const ParentComp = r.component;
-          const child = node;
-
-          node = (p) =>
-            ParentComp({
-              ...p,
-              outlet: (childProps = {}) => child({ ...p, ...childProps })
-            });
-        }
-
-        route = { ...last, props: routeProps, component: last.component, node };
-
-        log("🎞️Render", `Render in renderRoute ${pathname}`, "indiv");
-
-        render(() => h(App.VDOM.Fragment, null, [
-           nav ? h(nav, {key: "navbar"}) : null,
-           h("div", { id:"breadcrumb", key: "breadcrumb" }, ""),
-           h(ErrorBoundary, { component: node, props: routeProps })
-        ]), mountEl);
-
-      } else {
-        render(()=>h(notFound, {pathname}), mountEl);
-      }
-
-      currentPath = pathname;
-      currentRoute = route;
-      if (afterHook) afterHook(route, from || null);
-    }
-
-*/
-
-
 async function renderRoute(from, to) {
   const loc = useHash
     ? window.location.hash.slice(1) || "/"
@@ -271,20 +197,13 @@ async function renderRoute(from, to) {
       const r = matched[i];
       const ParentComp = r.component;
       const child = node;
-/*
+
+
       node = (p) =>
-        ParentComp({
+        h(ParentComp, {
           ...p,
           outlet: (childProps = {}) => child({ ...p, ...childProps })
         });
-        */
-
-node = (p) =>
-  h(ParentComp, {
-    ...p,
-    outlet: (childProps = {}) => child({ ...p, ...childProps })
-  });
-
     }
 
     route = { ...last, props: routeProps, component: last.component, node };
@@ -305,6 +224,102 @@ node = (p) =>
   currentRoute = route;
   if (afterHook) afterHook(route, from || null);
 }
+*/
+
+async function renderRoute(from, to) {
+  const loc = useHash
+    ? window.location.hash.slice(1) || "/"
+    : window.location.pathname + window.location.search;
+
+  const [pathname, search = ""] = loc.split("?");
+  const query = getQueryParams("?" + search);
+  const matched = matchRoutes(pathname);
+
+  let route = {
+    path: pathname,
+    component: notFound,
+    props: { params: {}, query, data: null, status: "idle", error: null },
+    node: () => notFound(),
+  };
+
+  // ❌ NO MATCH
+  if (!matched.length) {
+    render(() => h(notFound, { pathname }), mountEl);
+    currentPath = pathname;
+    return;
+  }
+
+  // ✅ MATCH
+  const last = matched[matched.length - 1];
+  const match = pathname.match(last.regex);
+  const params = getParams(last.keys, match);
+
+  const routeProps = {
+    params,
+    query,
+    data: null,
+    status: last.loader ? "loading" : "success",
+    error: null
+  };
+
+  // 🔁 Build component tree (layout → page)
+  let node = () => null;
+  for (let i = matched.length - 1; i >= 0; i--) {
+    const r = matched[i];
+    const ParentComp = r.component;
+    const child = node;
+
+    node = (p) =>
+      h(ParentComp, {
+        ...p,
+        outlet: (childProps = {}) => child({ ...p, ...childProps })
+      });
+  }
+
+  // 🔥 PHASE 1: render loading (or no-loader page)
+  render(() => h(App.VDOM.Fragment, null, [
+    nav ? h(nav, { key: "navbar" }) : null,
+    h("div", { id: "breadcrumb", key: "breadcrumb" }),
+    h(ErrorBoundary, { component: node, props: routeProps })
+  ]), mountEl);
+
+  // 🚚 RUN LOADER
+  if (last.loader) {
+    try {
+      routeProps.data = await last.loader({
+        params,
+        query,
+        route: last
+      });
+      routeProps.status = "success";
+    } catch (err) {
+      routeProps.status = "error";
+      routeProps.error = err;
+      console.error("Route loader error:", err);
+    }
+
+    // 🔥 PHASE 2: render with data
+    render(() => h(App.VDOM.Fragment, null, [
+      nav ? h(nav, { key: "navbar" }) : null,
+      h("div", { id: "breadcrumb", key: "breadcrumb" }),
+      h(ErrorBoundary, { component: node, props: routeProps })
+    ]), mountEl);
+  }
+
+  currentPath = pathname;
+  currentRoute = { ...last, props: routeProps, node };
+
+  if (afterHook) afterHook(currentRoute, from || null);
+}
+
+
+
+
+
+
+
+
+
 
 
     function navbarDynamic({navbar}) {
