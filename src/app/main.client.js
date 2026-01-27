@@ -10,6 +10,7 @@ window.App.VDOM.render(TodoApp, document.getElementById('app'));
 */
 
 import { TodoApp } from "./pages/TodoApp.js";
+import { fetchTodos } from "../shared/api.js";
 
 const { Router } = window.App;
 
