@@ -93,7 +93,7 @@ window.App = window.App || {};
     function afterEach(hook) { afterHook = hook; }
 
     // 👉 navigateTo: chỉ đổi URL, không render
-function navigateTo(url) {
+async function navigateTo(url) {
   if (currentPath === url) return;
 
   const from = currentPath;
@@ -256,7 +256,7 @@ async function renderRoute(from, to) {
       nav = navbar;
     }
 
-    function init(el, options = { hash: true }) {
+    async function init(el, options = { hash: true }) {
       mountEl = el;
       useHash = options.hash;
       currentPath = useHash
@@ -270,7 +270,7 @@ async function renderRoute(from, to) {
         currentPath = useHash
           ? window.location.hash.slice(1) || "/"
           : window.location.pathname + window.location.search;
-        renderRoute(from, currentPath);
+       await renderRoute(from, currentPath);
       };
 
       if (!useHash) window.addEventListener("popstate", popHandler);
@@ -298,11 +298,11 @@ async function renderRoute(from, to) {
       });
 
       // 🔥 gọi render lần đầu qua handler, đảm bảo chỉ 1 lần
-      renderRoute(null, currentPath);
+      await renderRoute(null, currentPath);
     }
 
-function rerender() {
-  renderRoute(null, currentPath);
+async function rerender() {
+  await renderRoute(null, currentPath);
 }
 
     function Outlet(props) {
