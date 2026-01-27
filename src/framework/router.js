@@ -15,53 +15,6 @@ window.App = window.App || {};
     let currentRoute = null;
     let nav = null;
     
-    const routeStore = {
-      data: null,
-      status: "idle", // idle | loading | success | error
-      error: null,
-      listeners: new Set()
-    };
-    
-    async function runLoader(route, params, query) {
-      if (!route?.loader) {
-        setRouteStore({ status: "success", data: null });
-        return;
-      }
-    
-      setRouteStore({ status: "loading", error: null });
-    
-      try {
-        const data = await route.loader({ params, query, route });
-        setRouteStore({ status: "success", data });
-      } catch (err) {
-        console.error("Route loader error:", err);
-        setRouteStore({ status: "error", error: err });
-      }
-    }
-    
-    async function reloadData() {
-      if (!currentRoute) return;
-    
-      const loc = useHash
-        ? window.location.hash.slice(1) || "/"
-        : window.location.pathname + window.location.search;
-    
-      const [pathname, search = ""] = loc.split("?");
-      const query = getQueryParams("?" + search);
-      const match = pathname.match(currentRoute.regex);
-      const params = getParams(currentRoute.keys, match);
-    
-      await runLoader(currentRoute, params, query);
-    }
-    
-    
-
-    function setRouteStore(patch) {
-      Object.assign(routeStore, patch);
-      routeStore.listeners.forEach(fn => fn(routeStore));
-    }
-    
-
     function pathToRegex(path) {
       return new RegExp("^" + path.replace(/:\w+/g, "([^/]+)") + "$");
     }
@@ -177,7 +130,6 @@ async function navigateTo(url) {
       }
     }
 
-/*
     async function renderRoute(from, to) {
       const loc = useHash
         ? window.location.hash.slice(1) || "/"
@@ -263,60 +215,6 @@ async function navigateTo(url) {
     
       if (afterHook) afterHook(currentRoute, from || null);
     }
-*/
-
-async function renderRoute(from, to) {
-  const loc = useHash
-    ? window.location.hash.slice(1) || "/"
-    : window.location.pathname + window.location.search;
-
-  const [pathname, search = ""] = loc.split("?");
-  const query = getQueryParams("?" + search);
-  const matched = matchRoutes(pathname);
-
-  if (!matched.length) {
-    render(() => h(notFound, { pathname }), mountEl);
-    return;
-  }
-
-  const last = matched[matched.length - 1];
-  const match = pathname.match(last.regex);
-  const params = getParams(last.keys, match);
-
-  // 🔥 CHẠY LOADER (KHÔNG render)
-  await runLoader(last, params, query);
-
-  let node = () => null;
-  for (let i = matched.length - 1; i >= 0; i--) {
-    const r = matched[i];
-    const Comp = r.component;
-    const child = node;
-
-    node = (p) =>
-      h(Comp, {
-        ...p,
-        outlet: (childProps = {}) => child({ ...p, ...childProps })
-      });
-  }
-
-  render(() => h(App.VDOM.Fragment, null, [
-    nav ? h(nav) : null,
-    h(ErrorBoundary, {
-      component: node,
-      props: { params, query, routeStore }
-    })
-  ]), mountEl);
-
-  currentPath = pathname;
-  currentRoute = { ...last, props: routeProps, node };
-
-  if (afterHook) afterHook(last, from || null);
-}
-
-
-
-
-
 
     function navbarDynamic({navbar}) {
       nav = navbar;
@@ -397,10 +295,11 @@ async function reload() {
       return h('a', { href: to, onClick: handleClick, ...rest }, children);
     }
 
+    // Xoá window.__CACHE__
     const invalidate = function (key) {
-  if (!window.__CACHE__) return;
-  delete window.__CACHE__[key];
-};
+      if (!window.__CACHE__) return;
+      delete window.__CACHE__[key];
+    };
 
     return { 
       addRoute, 
@@ -410,8 +309,6 @@ async function reload() {
       navigateTo, 
       getQueryParams,
       invalidate,
-      reloadData,      // 🔥 dùng cái này
-      routeStore,
       reload,
       init, 
       Outlet, 
