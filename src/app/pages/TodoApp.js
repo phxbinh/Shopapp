@@ -62,7 +62,7 @@ return h("div", { className: "todo-app" },
 
 export function TodoApp_({data}) {
   const todos = data?.todos || {}
-  alert(
+  //alert(
   return h("div", null, "🔥 TODO APP ALIVE");
 }
 
