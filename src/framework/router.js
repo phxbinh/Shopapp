@@ -356,12 +356,12 @@ node = (p) =>
       await renderRoute(null, currentPath);
     }
 
-async function rerender_() {
+async function rerender() {
   await renderRoute(null, currentPath);
 }
 
-async function rerender() {
-  await navigateTo(currentPath);
+async function reload() {
+  await renderRoute(null, currentPath);
 }
 
     function Outlet(props) {
@@ -399,6 +399,7 @@ async function rerender() {
       navigateTo, 
       getQueryParams,
       invalidate,
+      reload,
       init, 
       Outlet, 
       currentRoute, 
