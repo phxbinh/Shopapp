@@ -24,7 +24,7 @@ export function TodoApp() {
     await removeTodo(id);
     setTodos(await fetchTodos());
   }
-
+/*
   return h("div", null,
     h("h1", null, "Todo"),
     h("input", {
@@ -43,4 +43,37 @@ export function TodoApp() {
           )
         )
   );
+  */
+return h("div", { className: "todo-app" },
+  h("h1", { className: "todo-title" }, "Todo"),
+
+  h("div", { className: "todo-input-row" },
+    h("input", {
+      className: "todo-input",
+      value: input,
+      placeholder: "What needs to be done?",
+      oninput: e => setInput(e.target.value)
+    }),
+    h("button", {
+      className: "todo-add-btn",
+      onclick: add
+    }, "Add")
+  ),
+
+  loading
+    ? h("p", { className: "todo-loading" }, "Loading…")
+    : h("ul", { className: "todo-list" },
+        todos.map(t =>
+          h("li", { className: "todo-item", key: t.id },
+            h("span", { className: "todo-text" }, t.text),
+            h("button", {
+              className: "todo-delete-btn",
+              onclick: () => del(t.id)
+            }, "×")
+          )
+        )
+      )
+);
+
+
 }
