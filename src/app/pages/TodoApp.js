@@ -61,7 +61,7 @@ return h("div", { className: "todo-app" },
 
 
 // src/app/pages/TodoApp.js
-export function TodoApp({ data }) {
+export function TodoApp({ props }) {
   const data = props.data || {};
   const [todos] = useState(data.todos || []);
   //const [todos, setTodos] = useState(data?.todos || []);
