@@ -356,8 +356,12 @@ node = (p) =>
       await renderRoute(null, currentPath);
     }
 
-async function rerender() {
+async function rerender_() {
   await renderRoute(null, currentPath);
+}
+
+async function rerender() {
+  await navigateTo(currentPath);
 }
 
     function Outlet(props) {
