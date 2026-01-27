@@ -188,7 +188,7 @@ async function navigateTo(url) {
       ]), mountEl);
     */
       // 🚚 RUN LOADER
-      if (last.loader) {
+      //if (last.loader) {
         try {
           routeProps.data = await last.loader({
             params,
@@ -208,7 +208,7 @@ async function navigateTo(url) {
           h("div", { id: "breadcrumb", key: "breadcrumb" }),
           h(ErrorBoundary, { component: node, props: routeProps })
         ]), mountEl);
-      }
+      //}
     
       currentPath = pathname;
       currentRoute = { ...last, props: routeProps, node };
