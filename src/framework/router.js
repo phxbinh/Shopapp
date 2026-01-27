@@ -75,7 +75,6 @@ function addRoute(pathOrObj, component) {
     );
   }
 }
-/*
     function matchRoutes(pathname) {
       const matched = [];
       function recursive(list) {
@@ -91,8 +90,8 @@ function addRoute(pathOrObj, component) {
       recursive(routes);
       return matched;
     }
-    */
-
+    
+/*
 function matchRoutes(pathname) {
   const matched = [];
 
@@ -113,7 +112,7 @@ function matchRoutes(pathname) {
 
   return matched;
 }
-
+*/
 
 
 
@@ -147,7 +146,7 @@ async function navigateTo(url) {
 }
 
 
-/*
+
     function ErrorBoundary({ component: Comp, props }) {
       try { return h(Comp, props); }
       catch (err) {
@@ -155,7 +154,8 @@ async function navigateTo(url) {
         return h("div", { style: { color: "red" } }, "⚠️ Something went wrong.");
       }
     }
-*/
+
+/*
 function ErrorBoundary({ component: Comp, props }) {
   try {
     return Comp(props); // 🔥 FIX QUYẾT ĐỊNH
@@ -168,7 +168,7 @@ function ErrorBoundary({ component: Comp, props }) {
     );
   }
 }
-
+*/
 
 
 
@@ -278,6 +278,7 @@ async function renderRoute(from, to) {
           outlet: (childProps = {}) => child({ ...p, ...childProps })
         });
         */
+
 node = (p) =>
   h(ParentComp, {
     ...p,
