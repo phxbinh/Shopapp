@@ -2,6 +2,7 @@ const { h } = window.App.VDOM;
 const { useState, useEffect } = window.App.Hooks;
 import { fetchTodos, createTodo, removeTodo } from "../../shared/api.js";
 
+/*
 export function TodoApp() {
   const [todos, setTodos] = useState([]);
   const [input, setInput] = useState("");
@@ -24,6 +25,58 @@ export function TodoApp() {
     await removeTodo(id);
     setTodos(await fetchTodos());
   }
+
+return h("div", { className: "todo-app" },
+  h("h1", { className: "todo-title" }, "Todo"),
+
+  h("div", { className: "todo-input-row" },
+    h("input", {
+      className: "todo-input",
+      value: input,
+      placeholder: "What needs to be done?",
+      oninput: e => setInput(e.target.value)
+    }),
+    h("button", {
+      className: "todo-add-btn",
+      onclick: add
+    }, "Add")
+  ),
+
+  loading
+    ? h("p", { className: "todo-loading" }, "Loading…")
+    : h("ul", { className: "todo-list" },
+        todos.map(t =>
+          h("li", { className: "todo-item", key: t.id },
+            h("span", { className: "todo-text" }, t.text),
+            h("button", {
+              className: "todo-delete-btn",
+              onclick: () => del(t.id)
+            }, "×")
+          )
+        )
+      )
+);
+}
+*/
+
+
+// src/app/pages/TodoApp.js
+export function TodoApp({ data }) {
+  const [todos, setTodos] = useState(data?.todos || []);
+  const [input, setInput] = useState("");
+
+  async function add() {
+    if (!input.trim()) return;
+    await createTodo(input);
+    setInput("");
+    App.Router.rerender(); // 🔥 re-run loader
+  }
+
+  async function del(id) {
+    await removeTodo(id);
+    App.Router.rerender(); // 🔥 re-run loader
+  }
+
 /*
   return h("div", null,
     h("h1", null, "Todo"),
@@ -32,18 +85,18 @@ export function TodoApp() {
       oninput: e => setInput(e.target.value)
     }),
     h("button", { onclick: add }, "Add"),
-    loading
-      ? h("p", null, "Loading…")
-      : h("ul", null,
-          todos.map(t =>
-            h("li", { key: t.id },
-              t.text,
-              h("button", { onclick: () => del(t.id) }, "X")
-            )
-          )
+
+    h("ul", null,
+      todos.map(t =>
+        h("li", { key: t.id },
+          t.text,
+          h("button", { onclick: () => del(t.id) }, "X")
         )
+      )
+    )
   );
   */
+
 return h("div", { className: "todo-app" },
   h("h1", { className: "todo-title" }, "Todo"),
 
@@ -76,4 +129,17 @@ return h("div", { className: "todo-app" },
 );
 
 
+
+
 }
+
+
+
+
+
+
+
+
+
+
+
