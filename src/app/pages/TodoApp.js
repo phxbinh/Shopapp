@@ -179,7 +179,7 @@ export function TodoApp({ data }) {
     }
   }, [data]);
 
-
+/*
   async function add() {
     if (!input.trim()) return;
     await createTodo(input);
@@ -191,6 +191,24 @@ export function TodoApp({ data }) {
     await removeTodo(id);
     App.Router.rerender();
   }
+*/
+async function add() {
+  if (!input.trim()) return;
+  await createTodo(input);
+  setInput("");
+  delete window.__CACHE__;   // 🔥 FIX
+  await App.Router.reload();
+}
+
+async function del(id) {
+  await removeTodo(id);
+  delete window.__CACHE__;   // 🔥 FIX
+  await App.Router.reload();
+}
+
+
+
+
 
   return h("div", { className: "todo-app" },
     h("h1", { className: "todo-title" }, "Todo"),
