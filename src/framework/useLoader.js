@@ -224,6 +224,7 @@ async function reload() {
 
   try {
     const data = await loader();
+    alert("useLoader: "+JSON.stringify(data))
 
     cache.data = data;
     cache.status = "success";
