@@ -51,16 +51,16 @@ const { data, status, reload } = useLoader();
     if (!input.trim()) return;
     await createTodo(input);
     setInput("");
-    //delete window.__CACHE__;   // 🔥 FIX
+    delete window.__CACHE__;   // 🔥 FIX
     //await App.Router.reload();
-    reload();
+    //reload();
   }
   
   async function del(id) {
     await removeTodo(id);
-    //delete window.__CACHE__;   // 🔥 FIX
+    delete window.__CACHE__;   // 🔥 FIX
     //await App.Router.reload();
-    reload();
+    //reload();
   }
 
   return h("div", { className: "todo-app" },
@@ -98,6 +98,7 @@ export function TodoApp() {
   alert("TodoApp")
 
 const { data, status, reload } = useLoader(fetchTodos);
+const [input, setInput] = useState("");
 
   if (status === "loading") {
     return h("p", null, "Loading...");
