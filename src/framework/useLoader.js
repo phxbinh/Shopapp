@@ -1,18 +1,18 @@
 // src/framework/useLoader.js
 const { useState, useEffect } = window.App.Hooks;
 
-export function useLoader_() {
+export function useLoader(fetcher) {
   const route = App.Router.getCurrentRoute();
   if (!route) {
-    throw new Error("useLoader must be used inside a route");
+    throw new Error("useLoader must be used inside a route component");
   }
 
-  const key = route.path;          // "/" | "/blog"
-  const loader = route.loader;
+  const key = route.path; // "/" | "/blog"
 
-  if (!window.__CACHE__) {
-    window.__CACHE__ = { loaders: {} };
-  }
+  // 🔥 chuẩn hoá cache
+  if (!window.__CACHE__) window.__CACHE__ = {};
+  if (!window.__CACHE__.loaders) window.__CACHE__.loaders = {};
+
   if (!window.__CACHE__.loaders[key]) {
     window.__CACHE__.loaders[key] = {
       data: null,
@@ -30,32 +30,26 @@ export function useLoader_() {
     error: cache.error
   });
 
-  // 🔥 LOAD ON MOUNT / ROUTE CHANGE
+  // 🔥 load khi mount / đổi route
   useEffect(() => {
-    if (!loader) return;
-
-    // đã có data → sync
-    if (cache.status === "success") {
-      setState({
-        data: cache.data,
-        status: "success",
-        error: null
-      });
-      return;
-    }
-
     let cancelled = false;
 
     async function run() {
+      // đã có data → sync
+      if (cache.status === "success") {
+        setState({
+          data: cache.data,
+          status: "success",
+          error: null
+        });
+        return;
+      }
+
       try {
         cache.status = "loading";
         setState(s => ({ ...s, status: "loading" }));
 
-        const data = await loader({
-          params: route.props?.params,
-          query: route.props?.query,
-          route
-        });
+        const data = await fetcher();
 
         if (cancelled) return;
 
@@ -82,18 +76,17 @@ export function useLoader_() {
     }
 
     run();
-
     return () => { cancelled = true; };
   }, [key]);
 
-  // 🔁 FORCE RELOAD
+  // 🔁 chỉ refetch, KHÔNG rerender route
   async function reload() {
     cache.status = "idle";
     cache.data = null;
-    await App.Router.reload();
+    await Promise.resolve(); // giữ async contract
+    setState(s => ({ ...s, status: "idle" }));
   }
 
-  // 🧹 INVALIDATE ONLY
   function invalidate() {
     delete window.__CACHE__.loaders[key];
   }
@@ -104,41 +97,3 @@ export function useLoader_() {
     invalidate
   };
 }
-
-export function useLoader(fetcher) {
-  const route = App.Router.getCurrentRoute();
-  if (!route) throw new Error("useLoader must be used inside a route");
-
-  const key = route.path;
-
-  window.__CACHE__ = window.__CACHE__ || {};
-  window.__CACHE__.loaders = window.__CACHE__.loaders || {};
-
-  const store = window.__CACHE__.loaders;
-
-  if (!store[key]) {
-    store[key] = { status: "loading", data: null, error: null };
-
-    fetcher()
-      .then(data => {
-        store[key] = { status: "success", data, error: null };
-        App.Router.rerender();
-      })
-      .catch(err => {
-        store[key] = { status: "error", data: null, error: err };
-        App.Router.rerender();
-      });
-  }
-
-  return {
-    ...store[key],
-    reload() {
-      delete store[key];
-      App.Router.rerender();
-    },
-    invalidate() {
-      delete store[key];
-    }
-  };
-}
-
