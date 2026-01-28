@@ -2,6 +2,8 @@
 // =======================
 // Hooks tối ưu cho VDOM
 // =======================
+import { queryClient } from './query.js';
+
 window.App = window.App || {};
 
 (function(App){
@@ -304,6 +306,28 @@ function useDebounce(value, delay = 300) {
   return { value: debounced, cancel };
 }
 
+
+function useQuery(key, fetcher) {
+  const [, force] = useState(0);
+
+  useEffect(() => {
+    const unsubscribe = queryClient.subscribe(key, () => force(x => x + 1));
+
+    // Auto fetch nếu stale hoặc chưa có
+    if (!queryClient.getQueryData(key) || queryClient.getQueryData(key)?.status === 'stale') {
+      queryClient.prefetch(key, fetcher).catch(console.error);
+    }
+
+    return unsubscribe;
+  }, [key]);
+
+  const data = queryClient.getQueryData(key);
+  const status = data ? 'success' : 'loading';
+
+  return { data: data || [], status };
+}
+
+
   // ---------- Export ----------
   App.Hooks = {
     useState,
@@ -319,6 +343,7 @@ function useDebounce(value, delay = 300) {
     useKeepScrollOnResize,
     useDebounce,
     AuseDebounce,
+    useQuery,
     _internal: {
       scheduleRender,
       get currentInstance(){ return getCurrentInstance(); }
