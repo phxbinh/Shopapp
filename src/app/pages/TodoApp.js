@@ -95,6 +95,7 @@ const { data, status, reload } = useLoader();
 
 // src/app/pages/TodoApp.js
 export function TodoApp() {
+  alert("TodoApp"))
 
 const { data, status, reload } = useLoader(fetchTodos);
 
@@ -102,7 +103,7 @@ const { data, status, reload } = useLoader(fetchTodos);
     return h("p", null, "Loading...");
   }
 
-alert(JSON.stringify(data))
+//alert(JSON.stringify(data))
 
 
   async function add() {
