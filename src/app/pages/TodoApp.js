@@ -17,7 +17,7 @@ export function TodoApp_({ data, status }) {
   }, [data]);
   */
 
-/*
+
   if (status === "loading") {
     return h("p", null, "Loading todos...");
   }
@@ -36,14 +36,15 @@ export function TodoApp_({ data, status }) {
       setTodos(data.todos);
     }
   }, [data, window.__CACHE__]);
-*/
 
+
+/*
 const { data, status, reload } = useLoader();
 
   if (status === "loading") {
     return h("p", null, "Loading...");
   }
-
+*/
 
 
   async function add() {
