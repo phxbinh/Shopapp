@@ -1,7 +1,7 @@
 const { h } = window.App.VDOM;
 const { useState, useEffect } = window.App.Hooks;
 import { fetchTodos, createTodo, removeTodo } from "../../shared/api.js";
-import { useLoader } = window.App;
+const { useLoader } = window.App;
 
 // src/app/pages/TodoApp.js
 export function TodoApp_({ data, status }) {
