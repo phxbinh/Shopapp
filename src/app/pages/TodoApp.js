@@ -101,6 +101,7 @@ const { data, status, reload } = useLoader();
     return h("p", null, "Loading...");
   }
 
+alert(JSON.stringify(data))
 
 
   async function add() {
