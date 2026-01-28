@@ -130,90 +130,59 @@ window.App = window.App || {};
     }
 
     async function renderRoute(from, to) {
-      const loc = useHash
-        ? window.location.hash.slice(1) || "/"
-        : window.location.pathname + window.location.search;
-    
-      const [pathname, search = ""] = loc.split("?");
-      const query = getQueryParams("?" + search);
-      const matched = matchRoutes(pathname);
-    
-      let route = {
-        path: pathname,
-        component: notFound,
-        props: { params: {}, query, data: null, status: "idle", error: null },
-        node: () => notFound(),
-      };
-    
-      // ❌ NO MATCH
-      if (!matched.length) {
-        render(() => h(notFound, { pathname }), mountEl);
-        currentPath = pathname;
-        return;
-      }
-    
-      // ✅ MATCH
-      const last = matched[matched.length - 1];
-      const match = pathname.match(last.regex);
-      const params = getParams(last.keys, match);
-    
-      const routeProps = {
-        params,
-        query,
-        data: null,
-        status: last.loader ? "loading" : "success",
-        error: null
-      };
-    
-      // 🔁 Build component tree (layout → page)
-      let node = () => null;
-      for (let i = matched.length - 1; i >= 0; i--) {
-        const r = matched[i];
-        const ParentComp = r.component;
-        const child = node;
-    
-        node = (p) =>
-          h(ParentComp, {
-            ...p,
-            outlet: (childProps = {}) => child({ ...p, ...childProps })
-          });
-      }
-    
-      // 🔥 PHASE 1: render loading (or no-loader page)
-      render(() => h(App.VDOM.Fragment, null, [
-        nav ? h(nav, { key: "navbar" }) : null,
-        h("div", { id: "breadcrumb", key: "breadcrumb" }),
-        h(ErrorBoundary, { component: node, props: routeProps })
-      ]), mountEl);
-    
-      // 🚚 RUN LOADER
-      if (last.loader) {
-        try {
-          routeProps.data = await last.loader({
-            params,
-            query,
-            route: last
-          });
-          routeProps.status = "success";
-        } catch (err) {
-          routeProps.status = "error";
-          routeProps.error = err;
-          console.error("Route loader error:", err);
-        }
-    
-        // 🔥 PHASE 2: render with data
-        render(() => h(App.VDOM.Fragment, null, [
-          nav ? h(nav, { key: "navbar" }) : null,
-          h("div", { id: "breadcrumb", key: "breadcrumb" }),
-          h(ErrorBoundary, { component: node, props: routeProps })
-        ]), mountEl);
-      }
-    
-      currentPath = pathname;
-      currentRoute = { ...last, props: routeProps, node };
-    
-      if (afterHook) afterHook(currentRoute, from || null);
-    }
+  const loc = useHash
+    ? window.location.hash.slice(1) || "/"
+    : window.location.pathname + window.location.search;
+
+  const [pathname, search = ""] = loc.split("?");
+  const query = getQueryParams("?" + search);
+  const matched = matchRoutes(pathname);
+
+  if (!matched.length) {
+    render(() => h(notFound, { pathname }), mountEl);
+    currentPath = pathname;
+    return;
+  }
+
+  const last = matched[matched.length - 1];
+  const match = pathname.match(last.regex);
+  const params = getParams(last.keys, match);
+
+  const routeProps = {
+    params,
+    query,
+    route: last,   // 🔥 identity cho useLoader
+  };
+
+  // build tree
+  let node = () => null;
+  for (let i = matched.length - 1; i >= 0; i--) {
+    const r = matched[i];
+    const Parent = r.component;
+    const child = node;
+
+    node = (p) =>
+      h(Parent, {
+        ...p,
+        outlet: (childProps = {}) =>
+          child({ ...p, ...childProps })
+      });
+  }
+
+  // 🔥 render đúng 1 lần
+  render(() =>
+    h(App.VDOM.Fragment, null, [
+      nav ? h(nav, { key: "navbar" }) : null,
+      h(ErrorBoundary, { component: node, props: routeProps })
+    ]),
+    mountEl
+  );
+
+  currentPath = pathname;
+  currentRoute = { ...last, props: routeProps, node };
+
+  if (afterHook) afterHook(currentRoute, from || null);
+}
 
     function navbarDynamic({navbar}) {
       nav = navbar;
@@ -298,6 +267,10 @@ window.App = window.App || {};
       delete window.__CACHE__[key];
     };
 
+function getCurrentRoute() {
+  return currentRoute;
+}
+
     return { 
       addRoute, 
       setNotFound, 
@@ -309,7 +282,7 @@ window.App = window.App || {};
       reload,
       init, 
       Outlet, 
-      currentRoute, 
+      getCurrentRoute, 
       navbarDynamic, 
       rerender,
       Link
