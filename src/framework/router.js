@@ -180,12 +180,13 @@ window.App = window.App || {};
       }
     
       // 🔥 PHASE 1: render loading (or no-loader page)
+/*
       render(() => h(App.VDOM.Fragment, null, [
         nav ? h(nav, { key: "navbar" }) : null,
         h("div", { id: "breadcrumb", key: "breadcrumb" }),
         h(ErrorBoundary, { component: node, props: routeProps })
       ]), mountEl);
-    
+    */
       // 🚚 RUN LOADER
       if (last.loader) {
         try {
