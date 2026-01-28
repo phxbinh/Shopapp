@@ -192,6 +192,7 @@ export function useLoader(loader) {
   }, [key]);
 
   // 🔁 FORCE RELOAD (GIỐNG useEffect dep change)
+/*
   async function reload() {
     cache.status = "idle";
     cache.data = null;
@@ -210,6 +211,40 @@ export function useLoader(loader) {
       error: null
     });
   }
+  */
+
+async function reload() {
+  cache.status = "loading";
+  cache.error = null;
+
+  setState(s => ({
+    ...s,
+    status: "loading"
+  }));
+
+  try {
+    const data = await loader();
+
+    cache.data = data;
+    cache.status = "success";
+    cache.ts = Date.now();
+
+    setState({
+      data,
+      status: "success",
+      error: null
+    });
+  } catch (err) {
+    cache.status = "error";
+    cache.error = err;
+
+    setState({
+      data: null,
+      status: "error",
+      error: err
+    });
+  }
+}
 
   // 🧹 INVALIDATE CACHE ONLY
   function invalidate() {
