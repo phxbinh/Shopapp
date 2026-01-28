@@ -6,9 +6,10 @@ import '../framework/router.js';
 
 import { TodoApp } from "./pages/TodoApp.js";
 import { fetchTodos } from "../shared/api.js";
+import { queryClient } from "../framework/query.js";
 
 const { Router } = window.App;
-
+/*
 Router.addRoute({
   path: "/",
   component: TodoApp,
@@ -25,6 +26,19 @@ Router.addRoute({
     return { todos };
   }
 });
+*/
+
+// Trong file router config (ví dụ main.js hoặc nơi addRoute)
+Router.addRoute({
+  path: "/",
+  component: TodoApp,
+  loader: async () => {
+    const key = 'todos:list';
+    const todos = await queryClient.prefetch(key, fetchTodos);
+    return { todos }; // vẫn trả về cho component nếu cần fallback
+  }
+});
+
 
 Router.init(document.getElementById("app"), { hash: false });
 
