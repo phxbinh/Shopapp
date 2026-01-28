@@ -75,6 +75,7 @@ export function TodoApp({ data, status }) {
 const { h } = window.App.VDOM;
 const { useState } = window.App.Hooks;
 import { queryClient } from '../../framework/query.js'; // hoặc import nếu có
+import { fetchTodos, createTodo, removeTodo } from "../../shared/api.js";
 
 // Dùng useQuery custom
 const { useQuery } = window.App.Hooks;
