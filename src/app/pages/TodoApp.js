@@ -81,7 +81,7 @@ const { useQuery } = window.App.Hooks;
 
 export function TodoApp({ data, status: routeStatus }) {
   if (routeStatus === "loading") {
-    return h("p", null, "Loading todos...");
+    return h("p", null, "Loading todos TodoApp.js ...");
   }
 
   const TODOS_KEY = 'todos:list';
