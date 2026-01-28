@@ -1,7 +1,7 @@
 // src/framework/useLoader.js
 const { useState, useEffect } = window.App.Hooks;
 
-export function useLoader() {
+export function useLoader_() {
   const route = App.Router.getCurrentRoute();
   if (!route) {
     throw new Error("useLoader must be used inside a route");
@@ -104,3 +104,41 @@ export function useLoader() {
     invalidate
   };
 }
+
+export function useLoader(fetcher) {
+  const route = App.Router.getCurrentRoute();
+  if (!route) throw new Error("useLoader must be used inside a route");
+
+  const key = route.path;
+
+  window.__CACHE__ = window.__CACHE__ || {};
+  window.__CACHE__.loaders = window.__CACHE__.loaders || {};
+
+  const store = window.__CACHE__.loaders;
+
+  if (!store[key]) {
+    store[key] = { status: "loading", data: null, error: null };
+
+    fetcher()
+      .then(data => {
+        store[key] = { status: "success", data, error: null };
+        App.Router.rerender();
+      })
+      .catch(err => {
+        store[key] = { status: "error", data: null, error: err };
+        App.Router.rerender();
+      });
+  }
+
+  return {
+    ...store[key],
+    reload() {
+      delete store[key];
+      App.Router.rerender();
+    },
+    invalidate() {
+      delete store[key];
+    }
+  };
+}
+
