@@ -1,7 +1,10 @@
+
+/*
 const { h } = window.App.VDOM;
 const { useState, useEffect } = window.App.Hooks;
 const { useLoader } = window.App;
 import { fetchTodos, createTodo, removeTodo } from "../../shared/api.js";
+*/
 
 // src/app/pages/TodoApp.js
 export function TodoApp_({ data, status }) {
@@ -94,7 +97,7 @@ const { data, status, reload } = useLoader();
 
 
 // src/app/pages/TodoApp.js
-export function TodoApp() {
+export function TodoApp__() {
   alert("TodoApp")
 
 const { data, status, reload } = useLoader(fetchTodos);
@@ -149,6 +152,51 @@ const [input, setInput] = useState("");
     )
   );
 }
+
+
+
+
+const { h } = window.App.VDOM;
+const { useState } = window.App.Hooks;
+const { useLoader } = window.App;
+
+import { fetchTodos, createTodo, removeTodo } from "../../shared/api.js";
+
+export function TodoApp() {
+  const { data, status, reload } = useLoader(fetchTodos);
+  const [input, setInput] = useState("");
+
+  if (status === "loading") {
+    return h("p", null, "Loading...");
+  }
+
+  async function add() {
+    if (!input.trim()) return;
+    await createTodo(input);
+    setInput("");
+    reload(); // 🔥 only refetch data
+  }
+
+  async function del(id) {
+    await removeTodo(id);
+    reload();
+  }
+
+  return h("div", { className: "todo-app" },
+    h("h1", null, "Todo"),
+    h("input", {
+      value: input,
+      oninput: e => setInput(e.target.value)
+    }),
+    h("ul", null,
+      data.todos.map(t =>
+        h("li", { key: t.id }, t.text)
+      )
+    )
+  );
+}
+
+
 
 
 
