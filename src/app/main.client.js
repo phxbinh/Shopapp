@@ -2,11 +2,11 @@ import '../framework/Debugger.js';
 import '../framework/vdom.js';
 import '../framework/hooks.js';
 import '../framework/router.js';
-import '../framework/useLoader.js';
+//import '../framework/useLoader.js';
 //import '../framework/init_API.js';
 
 import { TodoApp } from "./pages/TodoApp.js";
-import { fetchTodos } from "../shared/api.js";
+//import { fetchTodos } from "../shared/api.js";
 
 const { Router } = window.App;
 
