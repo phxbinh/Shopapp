@@ -3,6 +3,7 @@ const { useState, useEffect } = window.App.Hooks;
 
 export function useLoader(fetcher) {
   const route = App.Router.getCurrentRoute();
+  alert(router)
   if (!route) {
     throw new Error("useLoader must be used inside a route component");
   }
@@ -29,6 +30,7 @@ export function useLoader(fetcher) {
     status: cache.status,
     error: cache.error
   });
+  alert(JSON.stringify(data))
 
   // 🔥 load khi mount / đổi route
   useEffect(() => {
