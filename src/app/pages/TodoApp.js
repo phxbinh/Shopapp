@@ -4,7 +4,7 @@ import { fetchTodos, createTodo, removeTodo } from "../../shared/api.js";
 import { useLoader } from "../../framework/useLoader.js";
 
 // src/app/pages/TodoApp.js
-export function TodoApp({ data, status }) {
+export function TodoApp_({ data, status }) {
   /*
   const [input, setInput] = useState("");
 
@@ -88,4 +88,66 @@ const { data, status, reload } = useLoader();
     )
   );
 }
+
+
+
+
+// src/app/pages/TodoApp.js
+export function TodoApp() {
+
+const { data, status, reload } = useLoader();
+
+  if (status === "loading") {
+    return h("p", null, "Loading...");
+  }
+
+
+
+  async function add() {
+    if (!input.trim()) return;
+    await createTodo(input);
+    setInput("");
+    //delete window.__CACHE__;   // 🔥 FIX
+    //await App.Router.reload();
+    reload();
+  }
+  
+  async function del(id) {
+    await removeTodo(id);
+    //delete window.__CACHE__;   // 🔥 FIX
+    //await App.Router.reload();
+    reload();
+  }
+
+  return h("div", { className: "todo-app" },
+    h("h1", { className: "todo-title" }, "Todo"),
+
+    h("div", { className: "todo-input-row" },
+      h("input", {
+        className: "todo-input",
+        value: input,
+        placeholder: "What needs to be done?",
+        oninput: e => setInput(e.target.value)
+      }),
+      h("button", { className: "todo-add-btn", onclick: add }, "Add")
+    ),
+
+    h("ul", { className: "todo-list" },
+      todos.map(t =>
+        h("li", { className: "todo-item", key: t.id },
+          h("span", { className: "todo-text" }, t.text),
+          h("button", {
+            className: "todo-delete-btn",
+            onclick: () => del(t.id)
+          }, "×")
+        )
+      )
+    )
+  );
+}
+
+
+
+
+
 
