@@ -95,7 +95,7 @@ const { data, status, reload } = useLoader();
 
 // src/app/pages/TodoApp.js
 export function TodoApp() {
-  alert("TodoApp"))
+  alert("TodoApp")
 
 const { data, status, reload } = useLoader(fetchTodos);
 
