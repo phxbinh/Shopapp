@@ -32,11 +32,12 @@ Router.addRoute({
 
 Router.addRoute({
   path: "/",
-  component: TodoApp,
+  component: TodoApp
+/*
   loader: async () => {
     const todos = await fetchTodos();
     return { todos };
-  }
+  }*/
 });
 
 
