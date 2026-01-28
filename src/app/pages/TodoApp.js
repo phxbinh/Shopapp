@@ -96,7 +96,7 @@ const { data, status, reload } = useLoader();
 // src/app/pages/TodoApp.js
 export function TodoApp() {
 
-const { data, status, reload } = useLoader();
+const { data, status, reload } = useLoader(fetchTodos);
 
   if (status === "loading") {
     return h("p", null, "Loading...");
