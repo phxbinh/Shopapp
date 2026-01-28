@@ -91,7 +91,7 @@ export function TodoApp({ data, status: routeStatus }) {
 
   const [input, setInput] = useState("");
 
-  alert(JSON.stringify(data))
+  //alert(JSON.stringify(data))
 
   async function add() {
     if (!input.trim()) return;
