@@ -76,7 +76,7 @@ const { data, status, reload } = useLoader();
     ),
 
     h("ul", { className: "todo-list" },
-      todos.map(t =>
+      data.todos.map(t =>
         h("li", { className: "todo-item", key: t.id },
           h("span", { className: "todo-text" }, t.text),
           h("button", {
