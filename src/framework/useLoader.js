@@ -159,6 +159,7 @@ export function useLoader(loader) {
         setState(s => ({ ...s, status: "loading" }));
 
         const data = await loader();
+        alert("useLoader: "+JSON.stringify(data))
 
         if (cancelled) return;
 
@@ -224,7 +225,7 @@ async function reload() {
 
   try {
     const data = await loader();
-    alert("useLoader: "+JSON.stringify(data))
+    
 
     cache.data = data;
     cache.status = "success";
