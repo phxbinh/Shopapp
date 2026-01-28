@@ -9,6 +9,7 @@ import { fetchTodos } from "../shared/api.js";
 
 const { Router } = window.App;
 
+/*
 Router.addRoute({
   path: "/",
   component: TodoApp,
@@ -25,6 +26,20 @@ Router.addRoute({
     return { todos };
   }
 });
+*/
+
+
+Router.addRoute({
+  path: "/",
+  component: TodoApp,
+  loader: async () => {
+    const todos = await fetchTodos();
+    return { todos };
+  }
+});
+
+
+
 
 Router.init(document.getElementById("app"), { hash: false });
 
