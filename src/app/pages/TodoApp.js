@@ -165,6 +165,7 @@ import { fetchTodos, createTodo, removeTodo } from "../../shared/api.js";
 export function TodoApp() {
   const { data, status, reload } = useLoader(fetchTodos);
   const [input, setInput] = useState("");
+  alert("TodoApp: "+JSON.stringify(data))
 
   if (status === "loading") {
     return h("p", null, "Loading...");
