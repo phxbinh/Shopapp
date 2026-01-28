@@ -1,6 +1,7 @@
 const { h } = window.App.VDOM;
 const { useState, useEffect } = window.App.Hooks;
 import { fetchTodos, createTodo, removeTodo } from "../../shared/api.js";
+import { useLoader } from "../../framework/useLoader.js";
 
 // src/app/pages/TodoApp.js
 export function TodoApp({ data, status }) {
@@ -15,7 +16,8 @@ export function TodoApp({ data, status }) {
     }
   }, [data]);
   */
-  
+
+/*
   if (status === "loading") {
     return h("p", null, "Loading todos...");
   }
@@ -34,19 +36,30 @@ export function TodoApp({ data, status }) {
       setTodos(data.todos);
     }
   }, [data, window.__CACHE__]);
+*/
+
+const { data, status, reload } = useLoader();
+
+  if (status === "loading") {
+    return h("p", null, "Loading...");
+  }
+
+
 
   async function add() {
     if (!input.trim()) return;
     await createTodo(input);
     setInput("");
-    delete window.__CACHE__;   // 🔥 FIX
+    //delete window.__CACHE__;   // 🔥 FIX
     //await App.Router.reload();
+    reload();
   }
   
   async function del(id) {
     await removeTodo(id);
-    delete window.__CACHE__;   // 🔥 FIX
+    //delete window.__CACHE__;   // 🔥 FIX
     //await App.Router.reload();
+    reload();
   }
 
   return h("div", { className: "todo-app" },
