@@ -306,7 +306,7 @@ function useDebounce(value, delay = 300) {
   return { value: debounced, cancel };
 }
 
-
+/*
 function useQuery(key, fetcher) {
   const [, force] = useState(0);
 
@@ -326,6 +326,48 @@ function useQuery(key, fetcher) {
 
   return { data: data || [], status };
 }
+*/
+
+function useQuery(key, fetcher) {
+  const [, forceUpdate] = useState(0);
+
+  useEffect(() => {
+    // Subscribe để re-render khi cache thay đổi
+    const unsubscribe = queryClient.subscribe(key, () => {
+      forceUpdate(x => x + 1);
+    });
+
+    // Initial fetch hoặc refetch nếu stale
+    const entry = queryClient.cache.get(key);
+    if (!entry || entry.status === 'stale' || entry.status === 'idle') {
+      queryClient.prefetch(key, fetcher).catch(err => {
+        console.error("Query failed:", err);
+        // Optional: set error vào cache
+      });
+    }
+
+    return unsubscribe;
+  }, [key, fetcher]); // thêm fetcher vào dep
+
+  const entry = queryClient.cache.get(key) || { data: undefined, status: 'loading' };
+
+  return {
+    data: entry.data ?? [],           // fallback []
+    status: entry.status || 'loading',
+    isLoading: entry.status === 'loading',
+    isError: entry.status === 'error',
+    error: entry.error || null,
+    isSuccess: entry.status === 'success',
+  };
+}
+
+
+
+
+
+
+
+
 
 
   // ---------- Export ----------
