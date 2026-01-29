@@ -40,5 +40,5 @@ Router.addRoute({
 });
 
 
-Router.init(document.getElementById("app"), { hash: true });
+Router.init(document.getElementById("app"), { hash: false });
 
